@@ -1,0 +1,14 @@
+name: CLASH
+version: 1.0.0
+main: net.infinitygrid.clash.CLASH
+description: Just clashing yuh
+api-version: 1.21.4
+bootstrapper: net.infinitygrid.clash.CLASHBootstrapper
+loader: net.infinitygrid.clash.CLASHPluginLoader
+
+dependencies:
+  server:
+    FastAsyncWorldEdit:
+      load: BEFORE
+      required: true
+      join-classpath: true

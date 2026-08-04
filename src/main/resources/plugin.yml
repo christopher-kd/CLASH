@@ -1,0 +1,12 @@
+name: CLASH
+version: 1.0.0
+main: net.infinitygrid.clash.CLASH
+description: Just clashing yuh
+author: christopherkd
+website: https://christopherkd.net
+api-version: 1.21.4
+depend:
+  - FastAsyncWorldEdit
+softdepend:
+  - ViaVersion
+  - PlugManX
