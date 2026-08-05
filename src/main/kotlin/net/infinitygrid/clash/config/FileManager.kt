@@ -8,10 +8,11 @@ import java.io.FileWriter
 
 class FileManager(private val plugin: CLASH) {
 
-    private val gson: Gson = GsonBuilder().setPrettyPrinting().create()
+    val gson: Gson = GsonBuilder().setPrettyPrinting().create()
     
     val schematicsFolder = File(plugin.dataFolder, "schematics")
     val worldTemplatesFolder = File(plugin.dataFolder, "world_templates")
+    val arenasFolder = File(plugin.dataFolder, "arenas")
     private val configFile = File(plugin.dataFolder, "config.json")
 
     init {
@@ -30,6 +31,10 @@ class FileManager(private val plugin: CLASH) {
         
         if (!worldTemplatesFolder.exists()) {
             worldTemplatesFolder.mkdirs()
+        }
+
+        if (!arenasFolder.exists()) {
+            arenasFolder.mkdirs()
         }
     }
 

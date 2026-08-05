@@ -23,6 +23,8 @@ class ScoreboardManager(val clashPlayer: CLASHPlayer) {
     }
 
     fun setText(lines: List<String>) {
+        scoreboard.entries.toList().forEach { scoreboard.resetScores(it) }
+
         var score = lines.size
         for (line in lines) {
             objective.getScore(line).score = score

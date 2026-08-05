@@ -24,9 +24,64 @@ object InteractiveHotbarTemplates {
             }
         }
 
+        val mapDetailsItem = ItemStack(Material.BOOK).apply {
+            itemMeta = itemMeta?.apply {
+                displayName(text("Set Map Details").color(NamedTextColor.YELLOW))
+            }
+        }
+
+        val undoItem = ItemStack(Material.RED_CANDLE).apply {
+            itemMeta = itemMeta?.apply {
+                displayName(text("Undo Last Action").color(NamedTextColor.RED))
+            }
+        }
+
+        val playerSpawnItem = ItemStack(Material.PLAYER_HEAD).apply {
+            itemMeta = itemMeta?.apply {
+                displayName(text("Set Player Spawn").color(NamedTextColor.AQUA))
+            }
+        }
+
+        val itemSpawnItem = ItemStack(Material.ITEM_FRAME).apply {
+            itemMeta = itemMeta?.apply {
+                displayName(text("Set Item Spawn").color(NamedTextColor.AQUA))
+            }
+        }
+
+        val spectatorSpawnItem = ItemStack(Material.FEATHER).apply {
+            itemMeta = itemMeta?.apply {
+                displayName(text("Set Spectator Spawn").color(NamedTextColor.AQUA))
+            }
+        }
+
         hotbar.setSlots(
             InteractiveHotbarSlot(saveItem, 1, {
-                player.sendMessage(text("Map saved!").color(NamedTextColor.GREEN))
+                val mapSetup = player.mapSetup
+                if (mapSetup == null) {
+                    player.sendMessage(text("No active map setup.").color(NamedTextColor.RED))
+                } else {
+                    mapSetup.save()
+                }
+            }, {}),
+            InteractiveHotbarSlot(mapDetailsItem, 3, {
+                val mapSetup = player.mapSetup
+                if (mapSetup == null) {
+                    player.sendMessage(text("No active map setup.").color(NamedTextColor.RED))
+                } else {
+                    mapSetup.openDetailsDialog()
+                }
+            }, {}),
+            InteractiveHotbarSlot(undoItem, 4, {
+                player.mapSetup?.undoLastSpawn()
+            }, {}),
+            InteractiveHotbarSlot(playerSpawnItem, 5, {
+                player.mapSetup?.addPlayerSpawn(player.location.clone())
+            }, {}),
+            InteractiveHotbarSlot(itemSpawnItem, 6, {
+                player.mapSetup?.addItemSpawn(player.location.clone())
+            }, {}),
+            InteractiveHotbarSlot(spectatorSpawnItem, 7, {
+                player.mapSetup?.setSpectatorSpawn(player.location.clone())
             }, {}),
             InteractiveHotbarSlot(cancelItem, 9, {
                 player.sendMessage(text("Setup cancelled.").color(NamedTextColor.RED))
