@@ -52,10 +52,16 @@ class CLASHCommand {
     private fun setup(ctx: CommandContext<CommandSourceStack>): Int {
         val executor = ctx.source.sender ?: return Command.SINGLE_SUCCESS
         val player = (executor as Player)
-        player.sendMessage("running command! yay!!!")
+        val clashPlayer = PlayerRegistry.instance.getPlayer(player)!!
+
+        if (clashPlayer.mapSetup != null) {
+            player.sendMessage("You are already in a map setup. Cancel it before starting another.")
+            return Command.SINGLE_SUCCESS
+        }
+
         val schematicName = StringArgumentType.getString(ctx, "Schematic to Load")
 
-        val setup = MapSetup(PlayerRegistry.instance.getPlayer(player)!!, schematicName)
+        val setup = MapSetup(clashPlayer, schematicName)
         setup.prepareWorld()
 
         return Command.SINGLE_SUCCESS
