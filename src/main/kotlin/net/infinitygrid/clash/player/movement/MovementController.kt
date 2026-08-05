@@ -43,4 +43,11 @@ class MovementController(private val clashPlayer: CLASHPlayer) {
         cooldown.stopCooldown()
     }
 
+    fun reset() {
+        clashPlayer.groundTracker.stopGroundScheduler()
+        currentMovementAction = MovementAction.IDLE
+        cooldown.reset()
+        allowDoubleJump(true)
+    }
+
 }

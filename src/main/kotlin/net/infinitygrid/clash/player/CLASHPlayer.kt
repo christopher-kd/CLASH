@@ -41,7 +41,7 @@ class CLASHPlayer(private val player: Player) : Player by player {
     private fun applyDefaultValues() {
         player.gameMode = GameMode.SURVIVAL
         player.allowFlight = true
-        hudManager.updateCooldown(hudManager.maxCooldownTicks)
+        movementController.reset()
         player.foodLevel = 20
         player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = Double.MAX_VALUE
         applyHealthScale(3.0)

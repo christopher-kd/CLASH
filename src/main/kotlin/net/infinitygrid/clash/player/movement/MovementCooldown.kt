@@ -46,4 +46,10 @@ class MovementCooldown(private val clashPlayer: CLASHPlayer, private val onReady
         clashPlayer.hudManager.cancelSmashAnimation()
     }
 
+    fun reset() {
+        stopCooldown()
+        cooldownProgress = clashPlayer.hudManager.maxCooldownTicks
+        clashPlayer.hudManager.updateCooldown(cooldownProgress)
+    }
+
 }
