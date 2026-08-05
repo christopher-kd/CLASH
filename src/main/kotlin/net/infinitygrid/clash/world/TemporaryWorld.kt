@@ -36,7 +36,15 @@ class TemporaryWorld(val bukkitWorld: World) : World by bukkitWorld {
         }
     private var pastedRegion: CuboidRegion? = null
 
-    fun fromSchematicAsync(schematicName: String): CompletableFuture<Unit> {
+    // TODO: This needs some overhaul
+    fun fromSchematicAsync(
+        schematicName: String,
+        showTitle: Boolean = true,
+        loadingLabel: String = "Entering Setup Mode",
+        completeTitle: String = "Setup Mode",
+        completeColor: TextColor = TextColor.fromHexString("#00FF00")!!,
+        subtitle: String = schematicName
+    ): CompletableFuture<Unit> {
         val startingTime = System.currentTimeMillis()
 
         val frames = listOf(
@@ -47,9 +55,9 @@ class TemporaryWorld(val bukkitWorld: World) : World by bukkitWorld {
         )
         val frameIndex = java.util.concurrent.atomic.AtomicInteger(0)
 
-        val task = Bukkit.getScheduler().runTaskTimer(CLASH.INSTANCE, Runnable {
+        val task = if (!showTitle) null else Bukkit.getScheduler().runTaskTimer(CLASH.INSTANCE, Runnable {
             val currentFrame = frameIndex.getAndIncrement()
-            val baseTitle = "Entering Setup Mode"
+            val baseTitle = loadingLabel
             val titleBuilder = text()
 
             baseTitle.forEachIndexed { i, char ->
@@ -89,15 +97,17 @@ class TemporaryWorld(val bukkitWorld: World) : World by bukkitWorld {
                     clipboard.region.maximumPoint.add(offset)
                 )
 
-                task.cancel()
-                val finalTitle = Title.title(
-                    text("Setup Mode").color(TextColor.fromHexString("#00FF00")),
-                    text(schematicName),
-                    Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3000), Duration.ofMillis(500))
-                )
-                Bukkit.getServer().showTitle(finalTitle)
+                task?.cancel()
+                if (showTitle) {
+                    val finalTitle = Title.title(
+                        text(completeTitle).color(completeColor),
+                        text(subtitle),
+                        Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3000), Duration.ofMillis(500))
+                    )
+                    Bukkit.getServer().showTitle(finalTitle)
+                }
             } catch (e: Exception) {
-                task.cancel()
+                task?.cancel()
                 println(e)
             }
             Unit

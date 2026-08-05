@@ -18,6 +18,8 @@ class PlayerSessionListener : Listener {
     @EventHandler
     fun onPlayerLeave(event: PlayerQuitEvent) {
         event.quitMessage(Component.text("<< ${event.player.name}"))
+        val clashPlayer = PlayerRegistry.instance.getPlayer(event.player)
+        clashPlayer?.arena?.leave(clashPlayer)
         PlayerRegistry.instance.unregisterPlayer(event.player)
     }
 

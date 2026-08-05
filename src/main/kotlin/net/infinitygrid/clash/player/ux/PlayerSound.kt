@@ -46,6 +46,17 @@ class PlayerSound(val clashPlayer: CLASHPlayer) {
         }, 0L, 2L)
     }
 
+    fun playArenaJoined() {
+        clashPlayer.playSound(clashPlayer.location, Sound.ENTITY_WITHER_SPAWN, .2f, 2f)
+        clashPlayer.playSound(clashPlayer.location, Sound.ENTITY_EVOKER_CAST_SPELL, 1.8f, 1.3f)
+        clashPlayer.playSound(clashPlayer.location, Sound.ENTITY_BREEZE_SLIDE, .1f, .7f)
+        clashPlayer.playSound(clashPlayer.location, Sound.ENTITY_BREEZE_IDLE_GROUND, .5f, .9f)
+    }
+
+    fun playArenaJoin() {
+        clashPlayer.playSound(clashPlayer.location, Sound.BLOCK_PORTAL_TRIGGER, .3f, .6f)
+    }
+
     fun playEnergyLoadedSound() {
         var soundCount = 0
         Bukkit.getScheduler().runTaskTimer(CLASH.INSTANCE, Runnable {

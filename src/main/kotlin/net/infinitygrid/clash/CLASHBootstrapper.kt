@@ -5,6 +5,7 @@ import io.papermc.paper.plugin.bootstrap.PluginBootstrap
 import io.papermc.paper.plugin.bootstrap.PluginProviderContext
 import io.papermc.paper.plugin.lifecycle.event.types.LifecycleEvents
 import net.infinitygrid.clash.command.CLASHCommand
+import net.infinitygrid.clash.command.QuitCommand
 import org.bukkit.plugin.java.JavaPlugin
 
 @Suppress("UnstableApiUsage")
@@ -14,6 +15,7 @@ class CLASHBootstrapper : PluginBootstrap {
         context.lifecycleManager.registerEventHandler(LifecycleEvents.COMMANDS) { commands ->
             val command = CLASHCommand()
             commands.registrar().register(command.createCommand().build(), "eee")
+            commands.registrar().register(QuitCommand().createCommand().build(), "Leave the current arena", listOf("q"))
         }
     }
 

@@ -1,5 +1,8 @@
 package net.infinitygrid.clash
 
+import net.infinitygrid.clash.arena.ArenaManager
+import net.infinitygrid.clash.arena.ArenaRegistry
+import net.infinitygrid.clash.arena.CreatorNameCache
 import net.infinitygrid.clash.config.FileManager
 import net.infinitygrid.clash.event.*
 import net.infinitygrid.clash.player.PlayerRegistry
@@ -7,6 +10,7 @@ import net.infinitygrid.clash.schematic.SchematicRegistry
 import net.infinitygrid.clash.world.TemporaryWorldManager
 import org.bukkit.Bukkit
 import org.bukkit.event.HandlerList
+import java.util.UUID
 
 class LifecycleManager(private val plugin: CLASH) {
 
@@ -19,12 +23,29 @@ class LifecycleManager(private val plugin: CLASH) {
     var schematicRegistry: SchematicRegistry? = null
         private set
 
+    var arenaRegistry: ArenaRegistry? = null
+        private set
+
+    var arenaManager: ArenaManager? = null
+        private set
+
+    var creatorNameCache: CreatorNameCache? = null
+        private set
+
     fun enable() {
         fileManager = FileManager(plugin)
         schematicRegistry = SchematicRegistry(plugin).also { it.loadAll() }
+        arenaRegistry = ArenaRegistry(plugin).also { it.loadAll() }
         temporaryWorldManager = TemporaryWorldManager(20)
+        arenaManager = ArenaManager()
+
+        val creatorUuids = arenaRegistry!!.getAll()
+            .flatMap { it.mapCreators }
+            .mapNotNull { runCatching { UUID.fromString(it) }.getOrNull() }
+        creatorNameCache = CreatorNameCache().also { it.loadAll(creatorUuids) }
+
         val playerRegistry = PlayerRegistry.initialize()
-        
+
         plugin.registerListener(
             PlayerSessionListener(),
             EventFoodLevelChange(),
@@ -32,7 +53,9 @@ class LifecycleManager(private val plugin: CLASH) {
             AgilityListener(),
             SwitchWorldEvent(),
             InventoryEvents(),
-            InventoryInteractEvent()
+            InventoryInteractEvent(),
+            CreateMatchMenuListener(),
+            JoinMatchMenuListener()
         )
 
         Bukkit.getOnlinePlayers().forEach { bukkitPlayer ->
@@ -51,6 +74,9 @@ class LifecycleManager(private val plugin: CLASH) {
         temporaryWorldManager?.clean()
         temporaryWorldManager = null
         schematicRegistry = null
+        arenaRegistry = null
+        arenaManager = null
+        creatorNameCache = null
         fileManager = null
         plugin.logger.info("Plugin disabled.")
     }

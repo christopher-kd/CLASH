@@ -1,12 +1,53 @@
 package net.infinitygrid.clash.player.ui.interactivehotbar
 
 import net.infinitygrid.clash.player.CLASHPlayer
+import net.infinitygrid.clash.player.ui.menu.CreateMatchMenu
+import net.infinitygrid.clash.player.ui.menu.JoinMatchMenu
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.NamedTextColor
+import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Material
 import org.bukkit.inventory.ItemStack
 
 object InteractiveHotbarTemplates {
+
+    fun applyDefaultMode(player: CLASHPlayer, defaultSlot: Int? = 4) {
+        val hotbar = player.interactiveHotbar
+        hotbar.clear()
+
+        val createMatchItem = ItemStack(Material.NETHER_STAR).apply {
+            itemMeta = itemMeta?.apply {
+                displayName(
+                    text("Create Match")
+                        .color(NamedTextColor.GOLD)
+                        .decoration(TextDecoration.BOLD, true)
+                        .decoration(TextDecoration.ITALIC, false)
+                )
+            }
+        }
+
+        val joinMatchItem = ItemStack(Material.ENDER_EYE).apply {
+            itemMeta = itemMeta?.apply {
+                displayName(
+                    text("Join Match")
+                        .color(NamedTextColor.GOLD)
+                        .decoration(TextDecoration.BOLD, true)
+                        .decoration(TextDecoration.ITALIC, false)
+                )
+            }
+        }
+
+        hotbar.setSlots(
+            InteractiveHotbarSlot(createMatchItem, 4, {
+                CreateMatchMenu.open(player)
+            }, {}),
+            InteractiveHotbarSlot(joinMatchItem, 6, {
+                JoinMatchMenu.open(player)
+            }, {})
+        )
+
+        defaultSlot?.let { player.inventory.heldItemSlot = it - 1 }
+    }
 
     fun applySetupMode(player: CLASHPlayer) {
         val hotbar = player.interactiveHotbar
@@ -95,24 +136,48 @@ object InteractiveHotbarTemplates {
         val hotbar = player.interactiveHotbar
         hotbar.clear()
 
-        val saveItem = ItemStack(Material.LIME_DYE).apply {
+        val rulebookItem = ItemStack(Material.WRITTEN_BOOK).apply {
             itemMeta = itemMeta?.apply {
-                displayName(text("Save Map").color(NamedTextColor.GREEN))
+                displayName(
+                    text("Rulebook / Match Modifiers")
+                        .color(NamedTextColor.DARK_RED)
+                        .decoration(TextDecoration.ITALIC, false)
+                        .decoration(TextDecoration.BOLD, true)
+                )
             }
         }
 
-        val otherItem = ItemStack(Material.RED_DYE).apply {
+        val pauseCountdownItem = ItemStack(Material.CLOCK).apply {
             itemMeta = itemMeta?.apply {
-                displayName(text("Other").color(NamedTextColor.RED))
+                displayName(
+                    text("Pause countdown")
+                        .color(NamedTextColor.YELLOW)
+                        .decoration(TextDecoration.ITALIC, false)
+                        .decoration(TextDecoration.BOLD, true)
+                )
+            }
+        }
+
+        val leaveArenaItem = ItemStack(Material.RED_DYE).apply {
+            itemMeta = itemMeta?.apply {
+                displayName(
+                    text("Leave arena")
+                        .color(NamedTextColor.RED)
+                        .decoration(TextDecoration.ITALIC, false)
+                        .decoration(TextDecoration.BOLD, true)
+                )
             }
         }
 
         hotbar.setSlots(
-            InteractiveHotbarSlot(saveItem, 1, {
-                player.sendMessage(text("yay"))
+            InteractiveHotbarSlot(rulebookItem, 1, {
+                player.sendMessage(text("okay here we have rules"))
             }, {}),
-            InteractiveHotbarSlot(otherItem, 9, {
-                player.sendMessage(text("okay"))
+            InteractiveHotbarSlot(pauseCountdownItem, 7, {
+                player.sendMessage(text("okay, this pauses countdown"))
+            }, {}),
+            InteractiveHotbarSlot(leaveArenaItem, 9, {
+                player.arena?.leave(player)
             }, {})
         )
     }

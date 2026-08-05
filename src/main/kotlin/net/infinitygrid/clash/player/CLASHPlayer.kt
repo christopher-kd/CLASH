@@ -1,5 +1,6 @@
 package net.infinitygrid.clash.player
 
+import net.infinitygrid.clash.arena.Arena
 import net.infinitygrid.clash.player.movement.MovementController
 import net.infinitygrid.clash.player.setup.MapSetup
 import net.infinitygrid.clash.player.ui.HUDManager
@@ -21,6 +22,8 @@ class CLASHPlayer(private val player: Player) : Player by player {
     val interactiveHotbar = InteractiveHotbar(this)
     var mapSetup: MapSetup? = null
         private set
+    var arena: Arena? = null
+        private set
 
     init {
         applyDefaultValues()
@@ -28,6 +31,10 @@ class CLASHPlayer(private val player: Player) : Player by player {
 
     fun setupMap(mapSetup: MapSetup) {
         this.mapSetup = mapSetup
+    }
+
+    fun setArena(arena: Arena?) {
+        this.arena = arena
     }
 
     fun enterMapSetupMode() {
@@ -41,13 +48,14 @@ class CLASHPlayer(private val player: Player) : Player by player {
         this.applyDefaultValues()
     }
 
-    private fun applyDefaultValues() {
+    fun applyDefaultValues() {
         player.gameMode = GameMode.SURVIVAL
         player.allowFlight = true
         movementController.reset()
         player.foodLevel = 20
         player.getAttribute(Attribute.ATTACK_SPEED)?.baseValue = Double.MAX_VALUE
         applyHealthScale(3.0)
+        InteractiveHotbarTemplates.applyDefaultMode(this)
     }
 
     fun applyHealthScale(hearts: Double) {
