@@ -4,6 +4,7 @@ import io.papermc.paper.threadedregions.scheduler.ScheduledTask
 import net.infinitygrid.clash.CLASH
 import net.infinitygrid.clash.player.CLASHPlayer
 import net.infinitygrid.clash.player.movement.MovementAction
+import net.infinitygrid.clash.util.CubicBezierCurve
 import net.kyori.adventure.text.Component
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextDecoration
@@ -16,6 +17,8 @@ class HUDManager(private val player: CLASHPlayer, val maxCooldownTicks: Int) {
     var p1y = .5f
 
     var maxAnimationTicks = 10L // Total ticks for depletion animation
+
+    private val smashEase = CubicBezierCurve(0.0, 0.0, 0.58, 1.0)
 
     private var smashAnimationTask: ScheduledTask? = null
 
@@ -68,37 +71,14 @@ class HUDManager(private val player: CLASHPlayer, val maxCooldownTicks: Int) {
     }
 
     fun applySmashAnimation(t: Float) {
-        val x = t.coerceIn(0.0f, 1.0f)
-        // Standard ease-out: cubic-bezier(0, 0, 0.58, 1)
-        val p0x = 0.0f
-        val p0y = 0.0f
-        val p1x = 0.58f
-        val p1y = 1.0f
-
-        var low = 0.0f
-        var high = 1.0f
-        var u = x
-        repeat(12) {
-            u = (low + high) / 2
-            val xu = 3 * (1 - u) * (1 - u) * u * p0x + 3 * (1 - u) * u * u * p1x + u * u * u
-            if (xu < x) low = u else high = u
-        }
-        val bezierVal = 3 * (1 - u) * (1 - u) * u * p0y + 3 * (1 - u) * u * u * p1y + u * u * u
-        player.exp = (1.0f - bezierVal).coerceIn(0.0f, 1.0f)
+        val bezierVal = smashEase.solve(t.coerceIn(0.0f, 1.0f).toDouble())
+        player.exp = (1.0f - bezierVal.toFloat()).coerceIn(0.0f, 1.0f)
     }
 
     fun updateCooldown(current: Int) {
         val x = if (maxCooldownTicks == 0) 1.0f else current.toFloat() / maxCooldownTicks.toFloat()
-        var low = 0.0f
-        var high = 1.0f
-        var u = x
-        repeat(12) {
-            u = (low + high) / 2
-            val xu = 3 * (1 - u) * (1 - u) * u * p0x + 3 * (1 - u) * u * u * p1x + u * u * u
-            if (xu < x) low = u else high = u
-        }
-        val progress = 3 * (1 - u) * (1 - u) * u * p0y + 3 * (1 - u) * u * u * p1y + u * u * u
-        player.exp = progress.coerceIn(0.0f, 1.0f)
+        val progress = CubicBezierCurve(p0x.toDouble(), p0y.toDouble(), p1x.toDouble(), p1y.toDouble()).solve(x.toDouble())
+        player.exp = progress.toFloat().coerceIn(0.0f, 1.0f)
     }
 
 }
