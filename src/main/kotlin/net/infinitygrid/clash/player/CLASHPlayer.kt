@@ -33,7 +33,9 @@ class CLASHPlayer(private val player: Player) : Player by player {
     }
 
     fun cancelMapSetup() {
+        mapSetup?.cancel()
         this.mapSetup = null
+        this.applyDefaultValues()
     }
 
     private fun applyDefaultValues() {

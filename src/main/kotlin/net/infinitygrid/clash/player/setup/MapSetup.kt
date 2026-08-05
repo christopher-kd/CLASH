@@ -2,6 +2,7 @@ package net.infinitygrid.clash.player.setup
 
 import net.infinitygrid.clash.CLASH
 import net.infinitygrid.clash.player.CLASHPlayer
+import net.infinitygrid.clash.world.TemporaryWorld
 import net.kyori.adventure.text.Component.text
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.format.TextDecoration
@@ -24,13 +25,21 @@ class MapSetup(val clashPlayer: CLASHPlayer, val schematicName: String) {
     }
 
     private val requirements = Requirements { updateScoreboard() }
+    private var world: TemporaryWorld? = null
 
     init {
         clashPlayer.setupMap(this)
     }
 
+    fun cancel() {
+        clashPlayer.scoreboardManager.reset()
+        world?.resetAndFreeAsync()
+        world = null
+    }
+
     fun prepareWorld() {
         val world = CLASH.INSTANCE.temporaryWorldManager.getAnyFreeWorld() ?: error("No free worlds!")
+        this.world = world
         world.fromSchematicAsync(schematicName).thenAccept {
             clashPlayer.teleportAsync(Location(world.bukkitWorld, 0.0, 150.0, 0.0))
             clashPlayer.scoreboardManager.setTitle(

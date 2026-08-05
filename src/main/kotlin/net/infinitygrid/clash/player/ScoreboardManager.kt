@@ -38,5 +38,9 @@ class ScoreboardManager(val clashPlayer: CLASHPlayer) {
         }
     }
 
+    fun reset() {
+        scoreboard.entries.forEach { scoreboard.resetScores(it) }
+        hide(true)
+    }
 
 }
