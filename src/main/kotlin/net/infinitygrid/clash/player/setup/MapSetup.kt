@@ -245,6 +245,7 @@ class MapSetup(val clashPlayer: CLASHPlayer, val schematicName: String) {
         playerSpawnLocations.add(snapped)
         requirements.playerSpawns = playerSpawnLocations.size
         spawnPlayerSpawnMarker(snapped, playerSpawnLocations.size)
+        clashPlayer.soundPlayer.playSetupMarkerSound()
         clashPlayer.sendMessage(
             text("Player spawn #${playerSpawnLocations.size} set at (${formatCoordinate(snapped.x)}, ${formatCoordinate(snapped.y)}, ${formatCoordinate(snapped.z)}).")
                 .color(NamedTextColor.GREEN)
@@ -289,6 +290,7 @@ class MapSetup(val clashPlayer: CLASHPlayer, val schematicName: String) {
         itemSpawnLocations.add(snapped)
         requirements.itemSpawns = itemSpawnLocations.size
         spawnItemSpawnMarker(snapped, itemSpawnLocations.size)
+        clashPlayer.soundPlayer.playSetupMarkerSound()
         clashPlayer.sendMessage(
             text("Item spawn #${itemSpawnLocations.size} set at (${formatCoordinate(snapped.x)}, ${formatCoordinate(snapped.y)}, ${formatCoordinate(snapped.z)}).")
                 .color(NamedTextColor.GREEN)
@@ -318,9 +320,12 @@ class MapSetup(val clashPlayer: CLASHPlayer, val schematicName: String) {
     fun undoLastSpawn() {
         val last = spawnActionHistory.removeLastOrNull()
         if (last == null) {
+            clashPlayer.soundPlayer.playErrorSound()
             clashPlayer.sendMessage(text("Nothing to undo.").color(NamedTextColor.RED))
             return
         }
+
+        clashPlayer.soundPlayer.playUndoSound()
 
         when (last) {
             is SpawnAction.PlayerSpawn -> {
@@ -345,6 +350,7 @@ class MapSetup(val clashPlayer: CLASHPlayer, val schematicName: String) {
         requirements.spectatorSpawn = true
         spectatorSpawnMarker?.remove()
         spectatorSpawnMarker = spawnHeadMarker(location, Material.ZOMBIE_HEAD, text("Spectator Spawn").color(NamedTextColor.AQUA))
+        clashPlayer.soundPlayer.playSetupMarkerSound()
         clashPlayer.sendMessage(
             text("Spectator spawn set at (${location.blockX}, ${location.blockY}, ${location.blockZ}).")
                 .color(NamedTextColor.GREEN)

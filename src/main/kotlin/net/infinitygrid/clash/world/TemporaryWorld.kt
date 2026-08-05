@@ -49,11 +49,11 @@ class TemporaryWorld(val bukkitWorld: World) : World by bukkitWorld {
 
         val task = Bukkit.getScheduler().runTaskTimer(CLASH.INSTANCE, Runnable {
             val currentFrame = frameIndex.getAndIncrement()
-            val baseTitle = "Preparing world from schematic: $schematicName"
+            val baseTitle = "Entering Setup Mode"
             val titleBuilder = text()
 
             baseTitle.forEachIndexed { i, char ->
-                val hue = (currentFrame * 0.05f + i.toFloat() / baseTitle.length) % 1f
+                val hue = (currentFrame * 0.05f + (baseTitle.length - 1 - i).toFloat() / baseTitle.length) % 1f
                 val color = TextColor.color(Color.HSBtoRGB(hue, 1f, 1f) and 0xFFFFFF)
                 titleBuilder.append(text(char.toString(), color))
             }
@@ -91,8 +91,8 @@ class TemporaryWorld(val bukkitWorld: World) : World by bukkitWorld {
 
                 task.cancel()
                 val finalTitle = Title.title(
+                    text("Setup Mode").color(TextColor.fromHexString("#00FF00")),
                     text(schematicName),
-                    text("Took ${System.currentTimeMillis() - startingTime}ms!").color(TextColor.fromHexString("#00FF00")),
                     Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3000), Duration.ofMillis(500))
                 )
                 Bukkit.getServer().showTitle(finalTitle)
