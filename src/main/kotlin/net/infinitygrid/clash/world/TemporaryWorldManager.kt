@@ -3,6 +3,7 @@ package net.infinitygrid.clash.world
 import net.infinitygrid.clash.CLASH
 import org.apache.commons.io.FileUtils
 import org.bukkit.Bukkit
+import org.bukkit.NamespacedKey
 import org.bukkit.World
 import org.bukkit.WorldCreator
 import java.io.File
@@ -18,7 +19,7 @@ class TemporaryWorldManager(preInitialize: Int) {
     init {
         cleanStartup()
         for (i in 0 until preInitialize) {
-            createWorld("temp_${UUID.randomUUID()}")
+            createWorld()
         }
     }
 
@@ -26,17 +27,19 @@ class TemporaryWorldManager(preInitialize: Int) {
         createdWorlds.add(TemporaryWorld(world))
     }
 
-    fun createWorld(worldName: String): CompletableFuture<World> {
+    fun createWorld(): CompletableFuture<World> {
         val future = CompletableFuture<World>()
 
-        val bukkitWorldCreator = WorldCreator(worldName)
+        val key = NamespacedKey("clash", UUID.randomUUID().toString())
+        val bukkitWorldCreator = WorldCreator.ofKey(key)
             .generator(EmptyWorldGenerator())
 
         Bukkit.getAsyncScheduler().run {
-            copyVoidWorld(worldName).thenAccept {
+            copyVoidWorld(key).thenAccept {
 
                 Bukkit.getScheduler().run {
                     val world = Bukkit.createWorld(bukkitWorldCreator)!!
+                    world.setGameRuleValue("spawnChunkRadius", "0")
                     registerWorld(world)
                     future.complete(world)
                 }
@@ -52,8 +55,9 @@ class TemporaryWorldManager(preInitialize: Int) {
     }
 
     private fun cleanStartup() {
-        Bukkit.getWorldContainer().listFiles()?.forEach { file ->
-            if (file.isDirectory && file.name.startsWith("temp_")) FileUtils.deleteDirectory(file)
+        val dimensionsFolder = File(Bukkit.getWorldContainer(), "main/dimensions/clash")
+        dimensionsFolder.listFiles()?.forEach { file ->
+            if (file.isDirectory) FileUtils.deleteDirectory(file)
         }
     }
 
@@ -73,7 +77,7 @@ class TemporaryWorldManager(preInitialize: Int) {
             }
     }
 
-    private fun copyVoidWorld(name: String): CompletableFuture<Boolean> {
+    private fun copyVoidWorld(key: NamespacedKey): CompletableFuture<Boolean> {
         val future = CompletableFuture<Boolean>()
 
         if (!templateWorlds.resolve("void_template").exists()) {
@@ -81,7 +85,7 @@ class TemporaryWorldManager(preInitialize: Int) {
         }
 
         val source = templateWorlds.resolve("void_template")
-        val target = File(Bukkit.getWorldContainer(), name)
+        val target = File(Bukkit.getWorldContainer(), "main/dimensions/${key.namespace}/${key.key}")
 
         FileUtils.copyDirectory(source, target)
         future.complete(true)
