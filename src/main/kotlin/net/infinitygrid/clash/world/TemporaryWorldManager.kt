@@ -18,36 +18,33 @@ class TemporaryWorldManager(preInitialize: Int) {
 
     init {
         cleanStartup()
-        for (i in 0 until preInitialize) {
-            createWorld()
-        }
+        initializePool(preInitialize)
     }
 
     private fun registerWorld(world: World) {
         createdWorlds.add(TemporaryWorld(world))
     }
 
-    fun createWorld(): CompletableFuture<World> {
-        val future = CompletableFuture<World>()
+    private fun initializePool(count: Int) {
+        val keys = List(count) { NamespacedKey("clash", UUID.randomUUID().toString()) }
 
-        val key = NamespacedKey("clash", UUID.randomUUID().toString())
+        Bukkit.getAsyncScheduler().runNow(CLASH.INSTANCE) {
+            keys.forEach { copyVoidWorldFiles(it) }
+
+            Bukkit.getScheduler().runTask(CLASH.INSTANCE, Runnable {
+                keys.forEach { createWorldFromKey(it) }
+            })
+        }
+    }
+
+    private fun createWorldFromKey(key: NamespacedKey): World {
         val bukkitWorldCreator = WorldCreator.ofKey(key)
             .generator(EmptyWorldGenerator())
 
-        Bukkit.getAsyncScheduler().run {
-            copyVoidWorld(key).thenAccept {
-
-                Bukkit.getScheduler().run {
-                    val world = Bukkit.createWorld(bukkitWorldCreator)!!
-                    world.setGameRuleValue("spawnChunkRadius", "0")
-                    registerWorld(world)
-                    future.complete(world)
-                }
-
-            }
-        }
-
-        return future
+        val world = Bukkit.createWorld(bukkitWorldCreator)!!
+        world.setGameRuleValue("spawnChunkRadius", "0")
+        registerWorld(world)
+        return world
     }
 
     fun getAnyFreeWorld(): TemporaryWorld? {
@@ -80,16 +77,24 @@ class TemporaryWorldManager(preInitialize: Int) {
     private fun copyVoidWorld(key: NamespacedKey): CompletableFuture<Boolean> {
         val future = CompletableFuture<Boolean>()
 
-        if (!templateWorlds.resolve("void_template").exists()) {
-            future.completeExceptionally(IllegalStateException("Template world 'void_template' does not exist"))
+        try {
+            copyVoidWorldFiles(key)
+            future.complete(true)
+        } catch (e: Exception) {
+            future.completeExceptionally(e)
         }
 
-        val source = templateWorlds.resolve("void_template")
-        val target = File(Bukkit.getWorldContainer(), "main/dimensions/${key.namespace}/${key.key}")
-
-        FileUtils.copyDirectory(source, target)
-        future.complete(true)
         return future
+    }
+
+    private fun copyVoidWorldFiles(key: NamespacedKey) {
+        val source = templateWorlds.resolve("void_template")
+        if (!source.exists()) {
+            throw IllegalStateException("Template world 'void_template' does not exist")
+        }
+
+        val target = File(Bukkit.getWorldContainer(), "main/dimensions/${key.namespace}/${key.key}")
+        FileUtils.copyDirectory(source, target)
     }
 
 
