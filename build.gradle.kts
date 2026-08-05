@@ -1,9 +1,9 @@
 plugins {
     id("java")
     kotlin("jvm")
-    id("io.papermc.paperweight.userdev") version "2.0.0-beta.19"
+    id("io.papermc.paperweight.userdev") version "2.0.0-beta.21"
     id("com.gradleup.shadow") version "8.3.6"
-    id("xyz.jpenilla.run-paper") version "2.3.1"
+    id("xyz.jpenilla.run-paper") version "3.0.2"
 }
 
 group = "net.infinitygrid"
@@ -21,7 +21,7 @@ repositories {
 
 
 dependencies {
-    paperweight.paperDevBundle("1.21.11-R0.1-SNAPSHOT")
+    paperweight.paperDevBundle("26.2.build.92-stable")
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
     testImplementation("com.github.seeseemelk:MockBukkit-v1.21:3.107.0")
 
@@ -33,7 +33,7 @@ dependencies {
 }
 
 java {
-    toolchain.languageVersion.set(JavaLanguageVersion.of(21))
+    toolchain.languageVersion.set(JavaLanguageVersion.of(25))
 }
 
 tasks.test {
@@ -41,15 +41,13 @@ tasks.test {
 }
 
 kotlin {
-    jvmToolchain(21)
+    jvmToolchain(25)
 }
 
 paperweight {
     javaLauncher = javaToolchains.launcherFor {
-        // Example scenario:
-        // Paper 1.17.1 was originally built with JDK 16 and the bundle
-        // has not been updated to work with 21+ (but we want to compile with a 25 toolchain)
-        languageVersion = JavaLanguageVersion.of(21)
+        // Minecraft 26.1+ requires Java 25 to run the server
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -59,7 +57,7 @@ tasks {
     shadowJar {
         // This names your output file "PluginName-1.0-all.jar"
         archiveClassifier.set("all")
-        destinationDirectory.set(file("C:\\Users\\99ctl\\Documents\\CLASH\\plugins"))
+        destinationDirectory.set(file("run/plugins"))
 
         // Relocation (Crucial Step!)
         // Temporarily commented out due to ASM/Kotlin incompatibility in this environment
@@ -78,10 +76,11 @@ tasks {
     }
 
     runServer {
-        minecraftVersion("1.21.11")
+        dependsOn(shadowJar) // Make sure a fresh plugin jar is in run/plugins before the server starts
+        minecraftVersion("26.2")
 
         downloadPlugins {
-            modrinth("FastAsyncWorldEdit", "2.15.0")
+            modrinth("FastAsyncWorldEdit", "2.15.3")
         }
 
     }
@@ -89,9 +88,11 @@ tasks {
 }
 
 tasks.withType(xyz.jpenilla.runtask.task.AbstractRun::class) {
+    // Not using JvmVendorSpec.JETBRAINS here: JBR's JVMTI implementation crashes
+    // spark's bundled async-profiler on startup (SIGSEGV in JvmtiEnv::GetClassMethods).
+    // Standard hotswap (method-body edits) still works fine via the IntelliJ debugger
+    // on a normal JDK; you just lose JBR's enhanced hotswap for structural changes.
     javaLauncher = javaToolchains.launcherFor {
-        vendor = JvmVendorSpec.JETBRAINS
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
-    jvmArgs("-XX:+AllowEnhancedClassRedefinition")
 }

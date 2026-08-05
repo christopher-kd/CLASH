@@ -6,6 +6,11 @@ build/
 .kotlin
 run/
 
+### Claude ###
+.claude
+CLAUDE.md
+TODO.md
+
 ### IntelliJ IDEA ###
 .idea/modules.xml
 .idea/jarRepositories.xml

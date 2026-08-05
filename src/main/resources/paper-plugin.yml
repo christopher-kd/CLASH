@@ -2,7 +2,7 @@ name: CLASH
 version: 1.0.0
 main: net.infinitygrid.clash.CLASH
 description: Just clashing yuh
-api-version: 1.21.4
+api-version: 26.2
 bootstrapper: net.infinitygrid.clash.CLASHBootstrapper
 loader: net.infinitygrid.clash.CLASHPluginLoader
 
