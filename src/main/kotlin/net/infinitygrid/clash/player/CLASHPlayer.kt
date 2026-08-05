@@ -28,6 +28,9 @@ class CLASHPlayer(private val player: Player) : Player by player {
 
     fun setupMap(mapSetup: MapSetup) {
         this.mapSetup = mapSetup
+    }
+
+    fun enterMapSetupMode() {
         player.gameMode = GameMode.CREATIVE
         InteractiveHotbarTemplates.applySetupMode(this)
     }

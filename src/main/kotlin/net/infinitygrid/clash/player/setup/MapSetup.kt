@@ -417,15 +417,19 @@ class MapSetup(val clashPlayer: CLASHPlayer, val schematicName: String) {
         val world = CLASH.INSTANCE.temporaryWorldManager.getAnyFreeWorld() ?: error("No free worlds!")
         this.world = world
         world.fromSchematicAsync(schematicName).thenAccept {
-            clashPlayer.teleportAsync(Location(world.bukkitWorld, 0.0, 150.0, 0.0))
-            clashPlayer.scoreboardManager.setTitle(
-                    text(
-                        "Setup Mode // $schematicName",
-                        TextColor.color(0xFFAA00)
-                    ).decoration(TextDecoration.BOLD, true)
-            )
-            updateScoreboard()
-            clashPlayer.scoreboardManager.hide(false)
+            // Only flip into setup mode (gamemode/hotbar) once the player has actually
+            // arrived in the temp world - not while still standing wherever the command was run.
+            clashPlayer.teleportAsync(Location(world.bukkitWorld, 0.0, 150.0, 0.0)).thenAccept {
+                clashPlayer.enterMapSetupMode()
+                clashPlayer.scoreboardManager.setTitle(
+                        text(
+                            "Setup Mode // $schematicName",
+                            TextColor.color(0xFFAA00)
+                        ).decoration(TextDecoration.BOLD, true)
+                )
+                updateScoreboard()
+                clashPlayer.scoreboardManager.hide(false)
+            }
         }
     }
 
