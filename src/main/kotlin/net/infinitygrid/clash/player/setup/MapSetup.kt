@@ -282,7 +282,7 @@ class MapSetup(val clashPlayer: CLASHPlayer, val schematicName: String) {
         val marker = location.world!!.dropItem(location, markerItem) { item ->
             item.setCanPlayerPickup(false)
             item.setCanMobPickup(false)
-            item.setUnlimitedLifetime(true)
+            item.isUnlimitedLifetime = true
             item.isInvulnerable = true
             item.isPersistent = false
             item.setGravity(false)
