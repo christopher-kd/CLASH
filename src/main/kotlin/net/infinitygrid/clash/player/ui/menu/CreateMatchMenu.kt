@@ -8,25 +8,24 @@ import net.kyori.adventure.text.format.TextDecoration
 import org.bukkit.Bukkit
 import org.bukkit.Material
 import org.bukkit.inventory.Inventory
-import org.bukkit.inventory.InventoryHolder
 import org.bukkit.inventory.ItemStack
 
-class CreateMatchMenu private constructor() : InventoryHolder {
+class CreateMatchMenu private constructor() : ArenaSelectionMenu {
 
     private lateinit var inventory: Inventory
     private lateinit var loading: InventoryLoadingAnimation
     private val slotArenas = mutableMapOf<Int, String>()
 
-    val isLoading: Boolean
+    override val isLoading: Boolean
         get() = loading.isRunning
 
     override fun getInventory(): Inventory = inventory
 
-    fun arenaKeyAt(slot: Int): String? = slotArenas[slot]
+    override fun arenaKeyAt(slot: Int): String? = slotArenas[slot]
 
-    fun startLoadingAnimation() = loading.start()
+    override fun startLoadingAnimation() = loading.start()
 
-    fun stopLoadingAnimation() = loading.stop()
+    override fun stopLoadingAnimation() = loading.stop()
 
     companion object {
         private const val DESCRIPTION_LINE_LENGTH = 40

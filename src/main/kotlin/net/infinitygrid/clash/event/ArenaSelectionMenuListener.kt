@@ -2,17 +2,17 @@ package net.infinitygrid.clash.event
 
 import net.infinitygrid.clash.CLASH
 import net.infinitygrid.clash.player.PlayerRegistry
-import net.infinitygrid.clash.player.ui.menu.JoinMatchMenu
+import net.infinitygrid.clash.player.ui.menu.ArenaSelectionMenu
 import org.bukkit.entity.Player
 import org.bukkit.event.EventHandler
 import org.bukkit.event.Listener
 import org.bukkit.event.inventory.InventoryClickEvent
 
-class JoinMatchMenuListener : Listener {
+class ArenaSelectionMenuListener : Listener {
 
     @EventHandler
     fun onClick(event: InventoryClickEvent) {
-        val holder = event.view.topInventory.holder as? JoinMatchMenu ?: return
+        val holder = event.view.topInventory.holder as? ArenaSelectionMenu ?: return
         event.isCancelled = true
         if (event.clickedInventory !== event.view.topInventory) return
         if (holder.isLoading) return

@@ -54,8 +54,7 @@ class LifecycleManager(private val plugin: CLASH) {
             SwitchWorldEvent(),
             InventoryEvents(),
             InventoryInteractEvent(),
-            CreateMatchMenuListener(),
-            JoinMatchMenuListener()
+            ArenaSelectionMenuListener()
         )
 
         Bukkit.getOnlinePlayers().forEach { bukkitPlayer ->
