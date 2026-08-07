@@ -32,12 +32,7 @@ import org.bukkit.util.Vector
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
-import java.net.URI
-import java.net.http.HttpClient
-import java.net.http.HttpRequest
-import java.net.http.HttpResponse
 import java.util.UUID
-import java.util.concurrent.CompletableFuture
 import java.util.logging.Level
 import kotlin.properties.Delegates
 
@@ -46,7 +41,6 @@ class MapSetup(val clashPlayer: CLASHPlayer, val schematicName: String) {
     companion object {
         private const val MIN_PLAYER_SPAWNS = 2
         private const val MIN_ITEM_SPAWNS = 1
-        private val httpClient: HttpClient = HttpClient.newHttpClient()
     }
 
     class Requirements(private val onUpdate: () -> Unit) {
@@ -196,43 +190,23 @@ class MapSetup(val clashPlayer: CLASHPlayer, val schematicName: String) {
             uuids.add(uuid)
         }
 
-        // Checked against NameMC (404 = no such account, 200 = exists) rather than Mojang's own
-        // profile API, which rate-limits aggressively and fails silently. Must run off the main
-        // thread and apply the result back via the scheduler once resolved.
-        val lookups = uuids.map { uuid -> checkUuidExists(uuid) }
-
-        CompletableFuture.allOf(*lookups.toTypedArray()).whenComplete { _, _ ->
-            val problems = uuids.indices.mapNotNull { i -> lookups[i].getNow(null)?.let { reason -> uuids[i] to reason } }
+        CLASH.INSTANCE.creatorNameCache.loadAll(uuids).whenComplete { _, _ ->
             clashPlayer.scheduler.run(CLASH.INSTANCE, {
+                val names = uuids.map { it to CLASH.INSTANCE.creatorNameCache.get(it) }
+                val problems = names.filter { (_, name) -> name == null }
                 if (problems.isEmpty()) {
                     mapCreatorUuids = uuids
                     requirements.mapCreators = true
-                    clashPlayer.sendMessage(text("Map creators verified.").color(NamedTextColor.GREEN))
+                    clashPlayer.sendMessage(text("Map creators verified: ${names.joinToString(", ") { it.second!! }}")
+                        .color(NamedTextColor.GREEN))
                 } else {
-                    problems.forEach { (uuid, reason) ->
-                        clashPlayer.sendMessage(text("Could not verify '$uuid': $reason").color(NamedTextColor.RED))
+                    problems.forEach { (uuid, _) ->
+                        clashPlayer.sendMessage(text("Could not verify '$uuid': no account found via minetools")
+                            .color(NamedTextColor.RED))
                     }
                 }
             }, null)
         }
-    }
-
-    private fun checkUuidExists(uuid: UUID): CompletableFuture<String?> {
-        val request = HttpRequest.newBuilder()
-            .uri(URI.create("https://de.namemc.com/profile/$uuid"))
-            .header("User-Agent", "Mozilla/5.0 (compatible; CLASH-plugin)")
-            .GET()
-            .build()
-
-        return httpClient.sendAsync(request, HttpResponse.BodyHandlers.discarding())
-            .handle { response, throwable ->
-                when {
-                    throwable != null -> "lookup failed (${throwable.message})"
-                    response.statusCode() == 404 -> "no account found for this UUID"
-                    response.statusCode() != 200 -> "unexpected response (HTTP ${response.statusCode()})"
-                    else -> null
-                }
-            }
     }
 
     private fun isValidItemId(id: String): Boolean {
