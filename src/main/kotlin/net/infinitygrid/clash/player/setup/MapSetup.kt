@@ -34,6 +34,7 @@ import java.io.FileWriter
 import java.io.IOException
 import java.util.UUID
 import java.util.logging.Level
+import kotlin.math.roundToInt
 import kotlin.properties.Delegates
 
 class MapSetup(val clashPlayer: CLASHPlayer, val schematicName: String) {
@@ -237,7 +238,7 @@ class MapSetup(val clashPlayer: CLASHPlayer, val schematicName: String) {
         )
     }
 
-    private fun roundToHalf(value: Double): Double = Math.round(value * 2.0) / 2.0
+    private fun roundToHalf(value: Double): Double = (value * 2.0).roundToInt() / 2.0
 
     private fun formatCoordinate(value: Double): String = "%.1f".format(value)
 
