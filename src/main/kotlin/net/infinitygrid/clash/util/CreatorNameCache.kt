@@ -1,4 +1,4 @@
-package net.infinitygrid.clash.arena
+package net.infinitygrid.clash.util
 
 import net.infinitygrid.clash.CLASH
 import java.net.URI

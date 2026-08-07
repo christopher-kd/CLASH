@@ -2,7 +2,7 @@ package net.infinitygrid.clash
 
 import net.infinitygrid.clash.arena.ArenaManager
 import net.infinitygrid.clash.arena.ArenaRegistry
-import net.infinitygrid.clash.arena.CreatorNameCache
+import net.infinitygrid.clash.util.CreatorNameCache
 import net.infinitygrid.clash.config.FileManager
 import net.infinitygrid.clash.schematic.SchematicRegistry
 import net.infinitygrid.clash.world.TemporaryWorldManager
