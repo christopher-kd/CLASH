@@ -20,6 +20,7 @@ import net.kyori.adventure.text.event.ClickCallback
 import net.kyori.adventure.text.format.NamedTextColor
 import net.kyori.adventure.text.format.TextColor
 import net.kyori.adventure.text.format.TextDecoration
+import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
 import org.bukkit.Location
 import org.bukkit.Material
@@ -29,10 +30,13 @@ import org.bukkit.entity.ArmorStand
 import org.bukkit.entity.Item
 import org.bukkit.inventory.ItemStack
 import org.bukkit.util.Vector
+import java.awt.Color
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
+import java.time.Duration
 import java.util.UUID
+import java.util.concurrent.atomic.AtomicInteger
 import java.util.logging.Level
 import kotlin.math.roundToInt
 import kotlin.properties.Delegates
@@ -397,7 +401,37 @@ class MapSetup(val clashPlayer: CLASHPlayer, val schematicName: String) {
     fun prepareWorld() {
         val world = CLASH.INSTANCE.temporaryWorldManager.getAnyFreeWorld() ?: error("No free worlds!")
         this.world = world
-        world.fromSchematicAsync(schematicName).thenAccept {
+        val rawPlayer = Bukkit.getPlayer(clashPlayer.uniqueId) ?: return
+
+        val loadingLabel = "Entering Setup Mode"
+        val frames = listOf(text("/"), text("-"), text("\\"), text("-"))
+        val frameIndex = AtomicInteger(0)
+        val spinnerTask = Bukkit.getScheduler().runTaskTimer(CLASH.INSTANCE, Runnable {
+            val currentFrame = frameIndex.getAndIncrement()
+            val titleBuilder = text()
+            loadingLabel.forEachIndexed { i, char ->
+                val hue = (currentFrame * 0.05f + (loadingLabel.length - 1 - i).toFloat() / loadingLabel.length) % 1f
+                val color = TextColor.color(Color.HSBtoRGB(hue, 1f, 1f) and 0xFFFFFF)
+                titleBuilder.append(text(char.toString(), color))
+            }
+            rawPlayer.showTitle(
+                Title.title(
+                    titleBuilder.build(),
+                    frames[currentFrame % frames.size],
+                    Title.Times.times(Duration.ZERO, Duration.ofMillis(1000), Duration.ofMillis(200))
+                )
+            )
+        }, 1, 1)
+
+        world.pasteSchematicAsync(schematicName).thenAccept {
+            spinnerTask.cancel()
+            rawPlayer.showTitle(
+                Title.title(
+                    text("Setup Mode").color(TextColor.fromHexString("#00FF00")!!),
+                    text(schematicName),
+                    Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3000), Duration.ofMillis(500))
+                )
+            )
             // Only flip into setup mode (gamemode/hotbar) once the player has actually
             // arrived in the temp world - not while still standing wherever the command was run.
             clashPlayer.teleportAsync(Location(world.bukkitWorld, 0.0, 150.0, 0.0)).thenAccept {

@@ -10,13 +10,8 @@ import com.sk89q.worldedit.regions.Region
 import com.sk89q.worldedit.session.ClipboardHolder
 import com.sk89q.worldedit.world.block.BlockTypes
 import net.infinitygrid.clash.CLASH
-import net.kyori.adventure.text.Component.text
-import net.kyori.adventure.text.format.TextColor
-import net.kyori.adventure.title.Title
 import org.bukkit.Bukkit
-import java.awt.Color
 import org.bukkit.World
-import java.time.Duration
 import java.util.concurrent.CompletableFuture
 
 enum class TemporaryWorldState() {
@@ -36,44 +31,7 @@ class TemporaryWorld(val bukkitWorld: World) : World by bukkitWorld {
         }
     private var pastedRegion: CuboidRegion? = null
 
-    // TODO: This needs some overhaul
-    fun fromSchematicAsync(
-        schematicName: String,
-        showTitle: Boolean = true,
-        loadingLabel: String = "Entering Setup Mode",
-        completeTitle: String = "Setup Mode",
-        completeColor: TextColor = TextColor.fromHexString("#00FF00")!!,
-        subtitle: String = schematicName
-    ): CompletableFuture<Unit> {
-        val startingTime = System.currentTimeMillis()
-
-        val frames = listOf(
-            text("/"),
-            text("-"),
-            text("\\"),
-            text("-")
-        )
-        val frameIndex = java.util.concurrent.atomic.AtomicInteger(0)
-
-        val task = if (!showTitle) null else Bukkit.getScheduler().runTaskTimer(CLASH.INSTANCE, Runnable {
-            val currentFrame = frameIndex.getAndIncrement()
-            val baseTitle = loadingLabel
-            val titleBuilder = text()
-
-            baseTitle.forEachIndexed { i, char ->
-                val hue = (currentFrame * 0.05f + (baseTitle.length - 1 - i).toFloat() / baseTitle.length) % 1f
-                val color = TextColor.color(Color.HSBtoRGB(hue, 1f, 1f) and 0xFFFFFF)
-                titleBuilder.append(text(char.toString(), color))
-            }
-
-            val title = Title.title(
-                titleBuilder.build(),
-                frames[currentFrame % frames.size],
-                Title.Times.times(Duration.ZERO, Duration.ofMillis(1000), Duration.ofMillis(200))
-            )
-            Bukkit.getServer().showTitle(title)
-        }, 1, 1)
-
+    fun pasteSchematicAsync(schematicName: String): CompletableFuture<Unit> {
         return CompletableFuture.supplyAsync {
             try {
                 val clipboard = CLASH.INSTANCE.schematicRegistry.getClipboard(schematicName)!!
@@ -96,18 +54,7 @@ class TemporaryWorld(val bukkitWorld: World) : World by bukkitWorld {
                     clipboard.region.minimumPoint.add(offset),
                     clipboard.region.maximumPoint.add(offset)
                 )
-
-                task?.cancel()
-                if (showTitle) {
-                    val finalTitle = Title.title(
-                        text(completeTitle).color(completeColor),
-                        text(subtitle),
-                        Title.Times.times(Duration.ofMillis(500), Duration.ofMillis(3000), Duration.ofMillis(500))
-                    )
-                    Bukkit.getServer().showTitle(finalTitle)
-                }
             } catch (e: Exception) {
-                task?.cancel()
                 println(e)
             }
             Unit

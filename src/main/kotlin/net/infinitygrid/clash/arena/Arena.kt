@@ -22,7 +22,7 @@ class Arena private constructor(val data: ArenaData, val world: TemporaryWorld) 
 
     init {
         world.state = TemporaryWorldState.OCCUPIED
-        readyFuture = world.fromSchematicAsync(data.schematic, showTitle = false)
+        readyFuture = world.pasteSchematicAsync(data.schematic)
     }
 
     fun join(clashPlayer: CLASHPlayer, onReady: (() -> Unit)? = null) {
