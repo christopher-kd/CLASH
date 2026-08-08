@@ -149,7 +149,7 @@ class MapSetup(val clashPlayer: CLASHPlayer, val schematicName: String) {
 
             rawPlayer.showDialog(dialog)
         } catch (e: Throwable) {
-            clashPlayer.sendMessage(text("Failed to open Map Details dialog: ${e}").color(NamedTextColor.RED))
+            clashPlayer.sendMessage(text("Failed to open Map Details dialog: $e").color(NamedTextColor.RED))
             CLASH.INSTANCE.logger.log(Level.SEVERE, "Failed to open Map Details dialog for ${clashPlayer.name}", e)
         }
     }
