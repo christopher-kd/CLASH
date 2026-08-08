@@ -37,9 +37,7 @@ object GradientTitleAnimation {
             val fraction = (tick.toDouble() / totalTicks).coerceIn(0.0, 1.0)
             val eased = EASE_OUT.solve(fraction)
             val isFinalFrame = tick >= totalTicks
-            // Linear 0 -> maxBandWidth -> 0 triangle across the animation, so the band
-            // starts and ends as a thin sliver and is widest at the midpoint.
-            val bandWidth = (maxBandWidth * (1.0 - abs(2.0 * fraction - 1.0))).coerceAtLeast(0.001)
+            val bandWidth = (maxBandWidth * tentMap(fraction)).coerceAtLeast(0.001)
 
             val times = if (isFinalFrame)
                 Title.Times.times(Duration.ZERO, Duration.ofMillis(3000), Duration.ofMillis(500))
@@ -89,6 +87,9 @@ object GradientTitleAnimation {
 
         return builder.build()
     }
+
+    // Tent map: one period of a triangle wave
+    private fun tentMap(x: Double): Double = 1.0 - abs(2.0 * x - 1.0)
 
     private fun lerpColor(a: TextColor, b: TextColor, t: Double): TextColor {
         val r = (a.red() + (b.red() - a.red()) * t).roundToInt()
