@@ -2,6 +2,8 @@ name: CLASH
 version: 1.0.0
 main: net.infinitygrid.clash.CLASH
 description: Just clashing yuh
+authors: [christopherkd]
+website: https://christopherkd.net
 api-version: 26.2
 bootstrapper: net.infinitygrid.clash.CLASHBootstrapper
 loader: net.infinitygrid.clash.CLASHPluginLoader
@@ -12,3 +14,7 @@ dependencies:
       load: BEFORE
       required: true
       join-classpath: true
+    ViaVersion:
+      required: false
+    PlugManX:
+      required: false
