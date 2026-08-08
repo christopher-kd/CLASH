@@ -42,6 +42,7 @@ class TemporaryWorldManager(preInitialize: Int) {
             .generator(EmptyWorldGenerator())
 
         val world = Bukkit.createWorld(bukkitWorldCreator)!!
+        world.setSpawnLocation(0, 150, 0)
         world.setGameRuleValue("spawnChunkRadius", "0")
         registerWorld(world)
         return world
