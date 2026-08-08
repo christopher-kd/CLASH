@@ -28,9 +28,9 @@ class TemporaryWorldManager(preInitialize: Int) {
     private fun initializePool(count: Int) {
         val keys = List(count) { NamespacedKey("clash", UUID.randomUUID().toString()) }
 
-        Bukkit.getAsyncScheduler().runNow(CLASH.INSTANCE) {
-            keys.forEach { copyVoidWorldFiles(it) }
+        val copyFutures = keys.map { copyVoidWorld(it) }
 
+        CompletableFuture.allOf(*copyFutures.toTypedArray()).thenRun {
             Bukkit.getScheduler().runTask(CLASH.INSTANCE, Runnable {
                 keys.forEach { createWorldFromKey(it) }
             })
@@ -78,11 +78,13 @@ class TemporaryWorldManager(preInitialize: Int) {
     private fun copyVoidWorld(key: NamespacedKey): CompletableFuture<Boolean> {
         val future = CompletableFuture<Boolean>()
 
-        try {
-            copyVoidWorldFiles(key)
-            future.complete(true)
-        } catch (e: Exception) {
-            future.completeExceptionally(e)
+        Bukkit.getAsyncScheduler().runNow(CLASH.INSTANCE) {
+            try {
+                copyVoidWorldFiles(key)
+                future.complete(true)
+            } catch (e: Exception) {
+                future.completeExceptionally(e)
+            }
         }
 
         return future
