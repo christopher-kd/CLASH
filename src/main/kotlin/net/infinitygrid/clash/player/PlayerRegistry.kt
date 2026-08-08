@@ -1,8 +1,7 @@
 package net.infinitygrid.clash.player
 
-import net.infinitygrid.clash.player.movement.MovementController
 import org.bukkit.entity.Player
-import java.util.UUID
+import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 
 class PlayerRegistry {
@@ -21,7 +20,7 @@ class PlayerRegistry {
         }
 
         fun terminate() {
-            _instance?.players?.forEach {
+            _instance?.players?.values?.forEach {
                 it.groundTracker.stopGroundScheduler()
                 it.movementController.stopCooldown()
             }
@@ -30,27 +29,26 @@ class PlayerRegistry {
         }
     }
 
-    private val players = ConcurrentHashMap.newKeySet<CLASHPlayer>()
+    private val players = ConcurrentHashMap<UUID, CLASHPlayer>()
 
     fun registerPlayer(bukkitPlayer: Player): CLASHPlayer {
         val player = CLASHPlayer(bukkitPlayer)
-        players.add(player)
+        players[bukkitPlayer.uniqueId] = player
         return player
     }
 
-    fun getPlayer(bukkitPlayer: Player) = players.find(bukkitPlayer::equals)
+    fun getPlayer(bukkitPlayer: Player) = players[bukkitPlayer.uniqueId]
 
-    fun getPlayerByUUID(uuid: UUID) = players.find { it.uniqueId == uuid }
+    fun getPlayerByUUID(uuid: UUID) = players[uuid]
 
     fun unregisterPlayer(bukkitPlayer: Player) {
-        val player = getPlayer(bukkitPlayer)
+        val player = players.remove(bukkitPlayer.uniqueId)
         player?.groundTracker?.stopGroundScheduler()
         player?.movementController?.stopCooldown()
-        players.removeIf(bukkitPlayer::equals)
     }
 
     fun unregisterAll() {
-        players.forEach {
+        players.values.forEach {
             it.groundTracker.stopGroundScheduler()
             it.movementController.stopCooldown()
         }
